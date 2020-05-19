@@ -1,5 +1,6 @@
 package com.example.fyp;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -11,9 +12,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -21,13 +25,15 @@ import com.google.firebase.auth.FirebaseAuth;
 public class Login extends AppCompatActivity {
 
     Button loginBtn;
-    TextView regPageBtn;
+    TextView regPageBtn, forgetPw;
     ProgressBar lProgressBar;
     FirebaseAuth lAuth;
-    EditText loginName, lPassword, lEmail;
+    EditText loginName, lPassword;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
@@ -92,6 +98,39 @@ public class Login extends AppCompatActivity {
             }
         });
 
+        forgetPw.setOnClickListener(new View.OnClickListener(){
+            @Override
+            public void onClick(View v) {
+                final EditText eT = new EditText(v.getContext());
+                AlertDialog.Builder pwReset = new AlertDialog.Builder(v.getContext());
+                pwReset.setMessage("Enter Email to reset your password.");
+                pwReset.setView(eT);
+                pwReset.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        String email = eT.getText().toString();
+                        lAuth.sendPasswordResetEmail(email).addOnSuccessListener(new OnSuccessListener<Void>() {
+                            @Override
+                            public void onSuccess(Void aVoid) {
+                                Toast.makeText(Login.this, "Reset Link has been sent to your Email.", Toast.LENGTH_SHORT).show();
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Toast.makeText(Login.this, "Error." + e.getMessage(), Toast.LENGTH_SHORT).show();
+                            }
+                        });
 
+                    }
+                });
+                pwReset.setNegativeButton("No", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        //close message
+                    }
+                });
+                pwReset.create().show();
+            }
+        });
     }
 }
